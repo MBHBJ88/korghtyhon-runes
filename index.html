@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Korghtyhon Runes</title>
+  <style>
+    body {
+      background: #111;
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      font-size: 28px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      font-size: 16px;
+      padding: 10px;
+      margin-top: 10px;
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 6px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #444;
+    }
+    #output {
+      margin-top: 20px;
+      padding: 10px;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      font-size: 18px;
+    }
+    #toast {
+      visibility: hidden;
+      min-width: 200px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 12px;
+      position: fixed;
+      z-index: 9999;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: visibility 0s, opacity 0.5s linear;
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Korghtyhon Runes</h1>
+  <textarea id="input" placeholder="Enter text here..."></textarea>
+  <button onclick="convertToRunes()">Text → ᚴᚱ</button>
+  <button onclick="convertFromRunes()">ᚴᚱ → Text</button>
+  <button onclick="copyOutput()">Copy result</button>
+  <button onclick="clearText()">Clean text</button>
+  <div id="output"></div>
+  <div id="toast"></div>
+
+  <script>
+    const MAP = {
+      'A': 'ᚨ','B': 'ᛒ','C': 'ᚲ','D': 'ᛞ','E': 'ᛖ','F': 'ᚠ','G': 'ᚷ',
+      'H': 'ᚺ','I': 'ᛁ','J': 'ᛃ','K': 'ᚲᚴ','L': 'ᛚ','M': 'ᛗ','N': 'ᚾ',
+      'O': 'ᛟ','P': 'ᛈ','Q': 'ᛩ','R': 'ᚱ','S': 'ᛊ','T': 'ᛏ','U': 'ᚢ',
+      'V': 'Ѱ','W': 'ᚹ','X': 'ᛪ','Y': 'ᛦ','Z': 'ᛉ',
+      'a': 'ᚨ','b': 'ᛒ','c': 'ᚲ','d': 'ᛞ','e': 'ᛖ','f': 'ᚠ','g': 'ᚷ',
+      'h': 'ᚺ','i': 'ᛁ','j': 'ᛃ','k': 'ᚴ','l': 'ᛚ','m': 'ᛗ','n': 'ᚾ',
+      'o': 'ᛟ','p': 'ᛈ','q': 'ᛩ','r': 'ᚱ','s': 'ᛊ','t': 'ᛏ','u': 'ᚢ',
+      'v': 'Ѱ','w': 'ᚹ','x': 'ᛪ','y': 'ᛦ','z': 'ᛉ',
+      'á': 'ᚨ´','é': 'ᛖ´','í': 'ᛁ´','ó': 'ᛟ´','ú': 'ᚢ´','ñ': 'ᚾ´',
+      'Á': 'ᚨ´','É': 'ᛖ´','Í': 'ᛁ´','Ó': 'ᛟ´','Ú': 'ᚢ´','Ñ': 'ᚾ´',
+      '1': '🜛','2': '🜞','3': '⍌','4': '⍍','5': '⍎',
+      '6': '⍏','7': '⍐','8': '٨','9': '∫','0': '⍉',
+      ' ': ' ','.': '.',
+      ',': ',','?': '?','!': '!','-': '-','_': '_',
+      ':': ':',';': ';','/': '/','\\': '\\','(': '(',
+      ')': ')','[': '[',']': ']','{': '{','}': '}',
+      '\'': '\'','"': '"','@': '@','#': '#','$': '$',
+      '%': '%','&': '&','*': '*','+': '+','=': '='
+    };
+
+    const REVERSE_MAP = Object.fromEntries(Object.entries(MAP).map(([k, v]) => [v, k]));
+
+    function toRunic(text) {
+      let out = '';
+      for (let ch of text) out += MAP[ch] ?? ch;
+      return out;
+    }
+
+    function fromRunic(text) {
+      let out = '';
+      for (let i = 0; i < text.length; i++) {
+        let two = text.slice(i, i + 2);
+        if (REVERSE_MAP[two]) {
+          out += REVERSE_MAP[two];
+          i++;
+          continue;
+        }
+        let one = text[i];
+        out += REVERSE_MAP[one] ?? one;
+      }
+      return out;
+    }
+
+    function convertToRunes() {
+      const input = document.getElementById('input').value;
+      document.getElementById('output').innerText = toRunic(input);
+    }
+
+    function convertFromRunes() {
+      const input = document.getElementById('input').value;
+      document.getElementById('output').innerText = fromRunic(input);
+    }
+
+    function copyOutput() {
+      const text = document.getElementById('output').innerText;
+      if (!text.trim()) {
+        showToast("No text to copy");
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Text copied to clipboard");
+      }).catch(() => {
+        showToast("Error copying text");
+      });
+    }
+
+    function clearText() {
+      document.getElementById('input').value = '';
+      document.getElementById('output').innerText = '';
+      localStorage.removeItem('korghtyhon_input');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.innerText = message;
+      toast.style.visibility = 'visible';
+      toast.style.opacity = '1';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.visibility = 'hidden';
+      }, 2000);
+    }
+
+    document.getElementById('input').addEventListener('input', () => {
+      localStorage.setItem('korghtyhon_input', document.getElementById('input').value);
+    });
+
+    window.addEventListener('load', () => {
+      const saved = localStorage.getItem('korghtyhon_input');
+      if (saved) document.getElementById('input').value = saved;
+    });
+  </script>
+</body>
+</html>
