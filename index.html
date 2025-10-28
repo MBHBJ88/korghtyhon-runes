@@ -84,7 +84,7 @@
   <script>
     const MAP = {
       'A': 'ᚨ','B': 'ᛒ','C': 'ᚲ','D': 'ᛞ','E': 'ᛖ','F': 'ᚠ','G': 'ᚷ',
-      'H': 'ᚺ','I': 'ᛁ','J': 'ᛃ','K': 'ᚲᚴ','L': 'ᛚ','M': 'ᛗ','N': 'ᚾ',
+      'H': 'ᚺ','I': 'ᛁ','J': 'ᛃ','K': 'ᚴ','L': 'ᛚ','M': 'ᛗ','N': 'ᚾ',
       'O': 'ᛟ','P': 'ᛈ','Q': 'ᛩ','R': 'ᚱ','S': 'ᛊ','T': 'ᛏ','U': 'ᚢ',
       'V': 'Ѱ','W': 'ᚹ','X': 'ᛪ','Y': 'ᛦ','Z': 'ᛉ',
       'a': 'ᚨ','b': 'ᛒ','c': 'ᚲ','d': 'ᛞ','e': 'ᛖ','f': 'ᚠ','g': 'ᚷ',
@@ -104,24 +104,40 @@
     };
 
     const REVERSE_MAP = Object.fromEntries(Object.entries(MAP).map(([k, v]) => [v, k]));
+    let uppercaseMap = [];
 
     function toRunic(text) {
+      uppercaseMap = [];
       let out = '';
-      for (let ch of text) out += MAP[ch] ?? ch;
+      for (let ch of text) {
+        const isUpper = ch === ch.toUpperCase() && ch.toLowerCase() !== ch.toUpperCase();
+        uppercaseMap.push(isUpper);
+        const normalized = ch.toLowerCase() === 'k' ? 'k' : ch;
+        out += MAP[normalized] ?? ch;
+      }
+      localStorage.setItem('korghtyhon_uppercaseMap', JSON.stringify(uppercaseMap));
+      localStorage.setItem('korghtyhon_original', text);
       return out;
     }
 
     function fromRunic(text) {
+      const map = JSON.parse(localStorage.getItem('korghtyhon_uppercaseMap') || '[]');
       let out = '';
+      let index = 0;
       for (let i = 0; i < text.length; i++) {
         let two = text.slice(i, i + 2);
+        let char;
         if (REVERSE_MAP[two]) {
-          out += REVERSE_MAP[two];
+          char = REVERSE_MAP[two];
           i++;
-          continue;
+        } else {
+          char = REVERSE_MAP[text[i]] ?? text[i];
         }
-        let one = text[i];
-        out += REVERSE_MAP[one] ?? one;
+        if (map[index]) {
+          char = char.toUpperCase();
+        }
+        out += char;
+        index++;
       }
       return out;
     }
@@ -153,6 +169,8 @@
       document.getElementById('input').value = '';
       document.getElementById('output').innerText = '';
       localStorage.removeItem('korghtyhon_input');
+      localStorage.removeItem('korghtyhon_original');
+      localStorage.removeItem('korghtyhon_uppercaseMap');
     }
 
     function showToast(message) {
@@ -164,17 +182,4 @@
         toast.style.opacity = '0';
         toast.style.visibility = 'hidden';
       }, 2000);
-    }
-
-    document.getElementById('input').addEventListener('input', () => {
-      localStorage.setItem('korghtyhon_input', document.getElementById('input').value);
-    });
-
-    window.addEventListener('load', () => {
-      const saved = localStorage.getItem('korghtyhon_input');
-      if (saved) document.getElementById('input').value = saved;
-    });
-  </script>
-</body>
-</html>
-
+   
